@@ -261,7 +261,21 @@ function sc_i18n_ob( $html ) {
 	foreach ( $all as $en => $tr ) {
 		$T[ $en ] = $tr[ $i ];
 	}
-	$html = strtr( $html, sc_i18n_raw( $l ) );
+	$raw = sc_i18n_raw( $l );
+	if ( is_front_page() || is_home() ) {
+		$t_en = 'SewCraftly - Free Sewing Patterns PDF & Step-by-Step Sewing Guides';
+		$d_en = 'Free PDF sewing patterns for women: dresses, tops, pants, skirts and jackets in sizes XXS–4XL, A4 and US Letter, with step-by-step sewing instructions.';
+		$t_tr = 'de' === $l ? 'SewCraftly – Kostenlose Schnittmuster als PDF & Nähanleitungen' : 'SewCraftly – Patrons de couture gratuits en PDF & tutoriels';
+		$d_tr = 'de' === $l
+			? 'Kostenlose Schnittmuster für Damen als PDF: Kleider, Oberteile, Hosen, Röcke und Jacken in Gr. 34–54, A4 und US Letter, mit Schritt-für-Schritt-Nähanleitung.'
+			: 'Patrons de couture gratuits pour femme en PDF : robes, hauts, pantalons, jupes et vestes du 36 au 56, en A4 et US Letter, avec explications pas à pas.';
+		foreach ( array( $t_en => $t_tr, $d_en => $d_tr ) as $en => $tr ) {
+			$raw[ $en ] = $tr;
+			$raw[ str_replace( '&', '&amp;', $en ) ] = str_replace( '&', '&amp;', $tr );
+			$raw[ str_replace( '–', '&#8211;', $en ) ] = $tr;
+		}
+	}
+	$html = strtr( $html, $raw );
 
 	// placeholder / aria-label / title / alt
 	$r = preg_replace_callback( '/\b(placeholder|aria-label|title|alt)="([^"<>]*)"/u', function ( $m ) use ( $T ) {
@@ -316,6 +330,15 @@ function sc_i18n_ob( $html ) {
 	}
 	return $html;
 }
+
+/* Dates in the local format (28. Oktober 2026 / 28 octobre 2026) */
+add_filter( 'option_date_format', function ( $f ) {
+	if ( is_admin() ) {
+		return $f;
+	}
+	$l = sc_i18n_lang();
+	return 'de' === $l ? 'j. F Y' : ( 'fr' === $l ? 'j F Y' : $f );
+} );
 
 add_action( 'template_redirect', function () {
 	if ( is_admin() || wp_doing_ajax() || is_feed() || is_robots() || is_embed() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
