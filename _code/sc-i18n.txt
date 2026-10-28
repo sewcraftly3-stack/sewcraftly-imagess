@@ -280,17 +280,20 @@ function sc_i18n_ob( $html ) {
 		}
 		$txt = trim( preg_replace( '/\s+/u', ' ', html_entity_decode( $raw, ENT_QUOTES | ENT_HTML5, 'UTF-8' ) ) );
 		$pre = '';
+		$suf = '';
 		if ( ! isset( $T[ $txt ] ) ) {
-			if ( preg_match( '/^([^\p{L}\p{N}]+)(.+)$/u', $txt, $x ) && isset( $T[ $x[2] ] ) ) {
+			// keep a leading symbol (arrow, emoji) and a trailing emoji around the known text
+			if ( preg_match( '/^([^\p{L}\p{N}]*)(.+?)([\s\p{So}\p{Sk}\p{Cs}\x{FE0F}\x{200D}]*)$/u', $txt, $x ) && isset( $T[ $x[2] ] ) ) {
 				$pre = $x[1];
 				$txt = $x[2];
+				$suf = $x[3];
 			} else {
 				return $m[0];
 			}
 		}
 		preg_match( '/^\s*/u', $raw, $a );
 		preg_match( '/\s*$/u', $raw, $b );
-		return '>' . $a[0] . esc_html( $pre . $T[ $txt ] ) . $b[0] . '<';
+		return '>' . $a[0] . esc_html( $pre . $T[ $txt ] . $suf ) . $b[0] . '<';
 	}, $html );
 	if ( null !== $r ) {
 		$html = $r;
