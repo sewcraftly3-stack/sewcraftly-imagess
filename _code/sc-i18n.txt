@@ -567,7 +567,15 @@ add_action( 'template_redirect', function () {
 		$tid = pll_get_post( 701, $l );
 		if ( $tid ) {
 			setcookie( 'sc_wl', '', time() - 3600, '/', '', is_ssl(), true );
-			wp_redirect( get_permalink( $tid ), 302 );
+			$to = get_permalink( $tid );
+			if ( isset( $_GET['mailpoet_router'] ) ) {
+				// Let MailPoet finish the confirmation on this request, then move on in the browser.
+				add_action( 'wp_footer', function () use ( $to ) {
+					echo '<script>location.replace(' . wp_json_encode( $to ) . ');</script>';
+				}, 999 );
+				return;
+			}
+			wp_redirect( $to, 302 );
 			exit;
 		}
 	}
