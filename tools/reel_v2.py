@@ -91,19 +91,18 @@ body{{width:1080px;height:1920px;overflow:hidden;font-family:Poppins;background:
 #end .chips .c{{background:#b5593e;border-color:#b5593e}}
 #end .sk{{position:absolute;right:70px;top:540px;height:420px}}
 .cta{{position:absolute;left:90px;right:90px;text-align:center;border-radius:70px;font-weight:700}}
-#cta1{{top:1290px;background:#f4efe9;color:#251d1b;font-size:54px;padding:24px}}
-#cta2{{top:1425px;background:#b5593e;color:#fff;font-size:54px;padding:26px;border:4px solid #f4efe9}}
+#cta1{{top:1150px;background:#f4efe9;color:#251d1b;font-size:54px;padding:24px}}
+#cta2{{top:1290px;background:#b5593e;color:#fff;font-size:54px;padding:26px;border:4px solid #f4efe9}}
 #cta2 b{{font-size:64px;letter-spacing:2px;color:#f4efe9}}
-.wm{{position:absolute;left:50%;top:1470px;transform:translateX(-50%);display:flex;align-items:center;gap:16px;background:#f4efe9;
-  padding:10px 34px 10px 12px;border-radius:50px;z-index:20;box-shadow:0 8px 24px #0005;border:3px solid #b5593e;white-space:nowrap}}
-.wm img{{width:62px;height:62px;border-radius:12px}} .wm span{{color:#251d1b;font-weight:700;font-size:38px}}
-/* subtitles */
-#sub{{position:absolute;left:70px;right:70px;top:1290px;z-index:30;text-align:center;line-height:1.25}}
-#sub .w{{display:inline-block;font-weight:800;font-size:78px;color:#fff;margin:0 8px;padding:2px 14px;border-radius:18px;
-  -webkit-text-stroke:6px #251d1b;paint-order:stroke fill;text-shadow:0 6px 18px #000c;transition:none}}
-#sub .w.on{{color:#FFD60A;transform:scale(1.12)}}
-#sub .w.hl{{color:#FFD60A}}
-#sub .w.hl.on{{color:#FFD60A}}
+.wm{{position:absolute;left:0;right:0;top:1545px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:20;white-space:nowrap}}
+.wm img{{width:40px;height:40px;border-radius:8px}} .wm span{{font-weight:600;font-size:32px;letter-spacing:1px;color:#fff;text-shadow:0 2px 10px #000b}}
+.wm.dark span{{color:#251d1b;text-shadow:none}}
+/* subtitles: basic black & white */
+#sub{{position:absolute;left:60px;right:60px;top:1290px;z-index:30;text-align:center;white-space:nowrap}}
+#sub .ln{{display:inline-block;transform-origin:50% 50%}}
+#sub .w{{display:inline-block;font-weight:800;font-size:76px;line-height:1.15;color:#fff;margin:0 10px;padding:0 14px;border-radius:14px;
+  -webkit-text-stroke:7px #000;paint-order:stroke fill;text-shadow:0 4px 14px #0008}}
+#sub .w.on{{background:#fff;color:#000;-webkit-text-stroke:0;text-shadow:none;box-shadow:0 6px 18px #0006}}
 """ + GSTYLE.replace('{{','{').replace('}}','}') + f"""</style></head><body>
 <div class=sc id=hook><img id=hf><div class=grad></div></div>
 <div class=sc id=details><div class=ph id=dph></div>{callouts}</div>
@@ -130,8 +129,8 @@ window.setT=function(t){{
     el.style.left=c.px+'px'; el.style.top=c.py+'px'; el.style.opacity=cl((t-c.at)/.15,0,1); el.style.transform=`scale(${{k}})`;}});
   // sketch draw
   const [sa]=SC.sketch;
-  document.getElementById('skf').style.clipPath=`inset(0 0 ${{100-cl((t-sa+.1)/1.1,0,1)*100}}% 0)`;
-  document.getElementById('skb').style.clipPath=`inset(0 0 ${{100-cl((t-sa-.5)/0.9,0,1)*100}}% 0)`;
+  document.getElementById('skf').style.clipPath=`inset(0 0 ${{100-cl((t-sa+.15)/0.8,0,1)*100}}% 0)`;
+  document.getElementById('skb').style.clipPath=`inset(0 0 ${{100-cl((t-sa-.15)/0.7,0,1)*100}}% 0)`;
   // guide pages
   const [ga,gb]=SC.guide, n=document.querySelectorAll('.pg').length, d=(gb-ga-.1)/n;
   for(let i=0;i<n;i++){{const pg=document.getElementById('pg'+i), s=ga-.1+i*d, k=ease((t-s)/.3), r=[-4,3,-2,4][i%4];
@@ -143,10 +142,11 @@ window.setT=function(t){{
   c2.style.opacity=t>SC.cta2?1:0; c2.style.transform=`scale(${{k2*(t>SC.cta2+.5?1+.035*Math.sin((t-SC.cta2)*7):1)}})`;
   // subtitles
   const sub=document.getElementById('sub'); const ln=L.find(l=>t>=l.s-.05&&t<l.e);
-  const st=(t>=SC.end[0]?990:1290); sub.style.top=st+'px'; document.getElementById('wm').style.top=(st+170)+'px';
+  const st=(t>=SC.end[0]?1000:1290); sub.style.top=st+'px';
+  const wm=document.getElementById('wm'); const light=(t>=SC.sketch[0]-.1&&t<SC.end[0]); wm.classList.toggle('dark',light);
   if(!ln){{sub.innerHTML='';return;}}
-  sub.innerHTML=ln.w.map(w=>{{const on=t>=w.s&&t<w.e+.02; const clean=w.w.replace(/[^\\w-]/g,'').toUpperCase();
-     const hl=HL.some(h=>clean.startsWith(h)); return `<span class="w${{on?' on':''}}${{hl?' hl':''}}">${{w.w}}</span>`}}).join(' ');
+  sub.innerHTML='<span class=ln>'+ln.w.map(w=>{{const on=t>=w.s&&t<w.e+.02; return `<span class="w${{on?' on':''}}">${{w.w}}</span>`}}).join('')+'</span>';
+  const l=sub.firstChild, k=Math.min(1,(sub.clientWidth-10)/l.scrollWidth); l.style.transform=`scale(${{k}})`;
 }};
 window.setHook=function(src){{return new Promise(r=>{{const im=document.getElementById('hf'); im.onload=r; im.src=src;}})}};
 </script></body></html>"""
