@@ -60,9 +60,35 @@ def main():
 
     im = Image.open(a.base).convert('RGB')
     d = ImageDraw.Draw(im)
-    # clear the text panel, keep the sketch card (1154..1627 x 473..985) and the bottom bar (y >= 990)
-    d.rectangle([636, 0, 1650, 466], fill=BG)
-    d.rectangle([636, 466, 1148, 989], fill=BG)
+    # detect the white sketch card and the black bottom bar, then clear everything else in the panel
+    px = im.load()
+    W, H = im.size
+    wh = lambda q: min(q) > 243
+    bar = H - 1
+    while bar > 800 and sum(px[660, bar - 1]) < 200:
+        bar -= 1
+    rows = []
+    for yy in range(300, bar):
+        best, run, st, bs = 0, 0, 0, 0
+        for xx in range(1000, W):
+            if wh(px[xx, yy]):
+                if run == 0:
+                    st = xx
+                run += 1
+                if run > best:
+                    best, bs = run, st
+            else:
+                run = 0
+        if best > 250:
+            rows.append((yy, bs, bs + best - 1))
+    y0c, y1c = rows[0][0], rows[-1][0]
+    x0c = min(r[1] for r in rows)
+    x1c = max(r[2] for r in rows)
+    cx0, cx1, cy0, cy1 = x0c - 8, x1c + 8, y0c - 8, y1c + 8
+    for (x0_, y0_, x1_, y1_) in [(636, 0, W, cy0 - 1), (636, cy0, cx0 - 1, bar - 1),
+                                 (cx1 + 1, cy0, W, bar - 1), (cx0, cy1 + 1, cx1, bar - 1)]:
+        if x1_ > x0_ and y1_ > y0_:
+            d.rectangle([x0_, y0_, x1_, y1_], fill=BG)
 
     X = 700
     lines = a.title.split('|')
